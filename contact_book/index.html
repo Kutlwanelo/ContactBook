@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<title>Contact Book</title>
+</head>
+<body onload="fetchContacts()">
+  <input type="text" id="searchBox" placeholder="Search Contacts..." onkeyup="searchContacts()">
+  <button id="toggleDarkMode">Toggle Dark Mode</button>
+  <div id="table">Contacts loading...</div>
+  <div class="button-container">
+   <button id="refresh">Refresh</button>
+  <button id="addContact"><i class="fas fa-user-plus"></i> Add Contact</button>
+
+
+   <script src="config.js"></script>
+   <script>
+    document.getElementById("refresh").addEventListener("click", fetchContacts);
+    document.getElementById("addContact").addEventListener("click", addContact);
+
+      function fetchContacts(){
+     fetch(rootPath + "getContacts.php")
+     .then(response => response.json())
+     .then(data =>{
+         console.log("Fetched contacts:", data);
+         displayOutput(data);
+     })
+     .catch(error => console.error("Error fetching contacts:", error));
+      }
+
+      document.getElementById("toggleDarkMode").addEventListener("click", function(){
+        document.body.classList.toggle("dark-mode");
+
+        if(document.body.classList.contains("dark-mode")){
+          localStorage.setItem("dark-Mode", "enabled");
+        } else{
+          localStorage.setItem("darkMode", "disabled");
+        }
+      });
+      window.onload = function(){
+        if (localStorage.getItem("darkMode") === "enabled"){
+          document.body.classList.add("dark-mode");
+        }
+      }
+
+  function searchContacts(){
+    let input = document.getElementById("searchBox").value.toLowerCase();
+    let cards = document.querySelectorAll(".contact-card");
+    cards.forEach(card =>{
+      let name = card.querySelector("h3").textContent.toLowerCase();
+      card.style.display = name.includes(input) ? "flex" : "none";
+    })
+  }
+ 
+function displayOutput(data) {
+  let output =  "<div class='contact-list'>";
+    for (let contact of data) {
+        output += `
+            <div class="contact-card" onclick="editContact(${contact.id})">
+                <img src="uploads/${contact.avatar}" alt="Avatar">
+                <div class="contact-info">
+                    <h3>${contact.firstname} ${contact.lastname}</h3>
+                    <p>${contact.mobile}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    output += "</div>";
+    document.getElementById("table").innerHTML = output;
+}
+
+
+      function addContact(){
+        window.open("add-contact.html", "_self");
+      }
+
+      function editContact(id){
+        window.open("edit-contact.html?id=" + id, "_self");
+      }
+   </script>
+</body>
+</html>
